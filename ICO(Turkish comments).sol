@@ -27,6 +27,7 @@ interface ERC20Interface {
 }
 
 // Hata almamak için interface'de tanımlı olan her şeyi "override" etmemiz gerekiyor?
+// "virtual" fonksiyona eklendiğinde yeni kontratta davranışı değişebilir demek?
 // Burdaki çoğu şey standart ve anlamama gerek yok sadece böyle yapıldığını bilmek gerekiyor.
 contract MyFirstToken is ERC20Interface {
 
@@ -55,7 +56,7 @@ contract MyFirstToken is ERC20Interface {
     }
 
     // Transfer yapmak için gereken fonksiyon.
-    function transfer(address _to, uint256 _value) public override returns (bool success) {
+    function transfer(address _to, uint256 _value) public virtual override returns (bool success) {
         require(balances[msg.sender] >= _value);    // Elinde bulunan tokenden fazla token göderememesi için
 
         balances[_to] += _value;
@@ -65,7 +66,7 @@ contract MyFirstToken is ERC20Interface {
         return true;
     }
 
-    function transferFrom(address _from, address _to, uint256 _value) public override returns (bool success) {
+    function transferFrom(address _from, address _to, uint256 _value) public virtual override returns (bool success) {
         require(allowed[_from][_to] >= _value);
         require(balances[_from] >= _value);
 
@@ -101,7 +102,7 @@ contract MyFirstTokenICO is MyFirstToken {
     uint tokenPrice = 0.001 ether;  // 1 Ether = 1000 MFET
     uint public hardCap = 300 ether;    // Maksimum bağış sayısı
     uint public raisedAmount;
-    uint public saleStart = block.timestamp + 3600;    // Deploy ettikten 3600 saniye sonra başlayacak.
+    uint public saleStart = block.timestamp;    // Deploy eder etmez başlar.
     uint public saleEnd = block.timestamp + 60480;  // Deploy ettikten 60480 saniye sonra bitecek.
     uint public tokenTradeStart = saleEnd + 60480;  // Satış bittikten 60480 saniye sonra satılabilir olacak.
     uint public maxInvestment = 5 ether;
@@ -171,4 +172,23 @@ contract MyFirstTokenICO is MyFirstToken {
     receive() payable external {
         invest();
     }
+
+    // "virtual" ı sildik
+    function transfer(address _to, uint256 _value) public override returns (bool success) {
+        require(block.timestamp > tokenTradeStart);
+
+        // MyFirstToken = Diğer kontratın ismi
+        MyFirstToken.transfer(_to, _value);    // soldaki kod ile aynı = super.transfer(_to, _value);
+        return true;
+    }
+
+    // "virtual" ı sildik
+    function transferFrom(address _from, address _to, uint256 _value) public override returns (bool success) {
+        require(block.timestamp > tokenTradeStart);
+
+        // MyFirstToken = Diğer kontratın ismi
+        MyFirstToken.transferFrom(_from, _to, _value);  // soldaki kod ile aynı = super.transfer(_to, _value);
+        return true;
+    }
+    
 }
