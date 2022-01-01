@@ -173,6 +173,7 @@ contract MyFirstTokenICO is MyFirstToken {
         invest();
     }
 
+    // Alttaki iki fonksiyonu tokenleri kilitleyebilmek için çağırdık?
     // "virtual" ı sildik
     function transfer(address _to, uint256 _value) public override returns (bool success) {
         require(block.timestamp > tokenTradeStart);
