@@ -146,5 +146,29 @@ contract MyFirstTokenICO is MyFirstToken {
         }
     }
 
+    event Invest(address investor, uint value, uint tokens);
 
+    // Yatırım yapmak için kullanılacak fonksiyon.
+    function invest() payable public returns(bool) {
+        icoState = getCurrentState();
+        require(icoState == State.running);
+
+        require(msg.value >= minInvestment && msg.value <= maxInvestment);
+        raisedAmount += msg.value;
+        require(raisedAmount <= hardCap);
+
+        uint tokens = msg.value / tokenPrice;
+
+        balances[msg.sender] += tokens;
+        balances[founder] -= tokens;
+        deposit.transfer(msg.value);    //  Yatırım yapılan miktarı deposit adresine gönderen kod.
+        emit Invest(msg.sender, msg.value, tokens);
+
+        return true;
+    }
+
+    // Birisi kontrat adresine direkt olarak para yolladığında "invest()" fonksiyonu devreye girecek.
+    receive() payable external {
+        invest();
+    }
 }
