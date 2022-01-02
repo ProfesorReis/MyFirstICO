@@ -192,4 +192,11 @@ contract MyFirstTokenICO is MyFirstToken {
         return true;
     }
     
+    // Fonksiyon herhangi birisi tarafından çağrılabilir böylece kontrat sahibi fikrini değiştirse bile her türlü satılmamış tokenler yakılabilir.
+    function burn() public returns(bool) {
+        icoState = getCurrentState();   // ICO'nun durumunu şu anki duruma eşitledik
+        require(icoState == State.afterEnd);
+        balances[founder] = 0;  // Founder'daki bütün tokenleri sıfırlar. Sanırım bu ilkel bir yöntem.
+        return true;
+    }
 }
